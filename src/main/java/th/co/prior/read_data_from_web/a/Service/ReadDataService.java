@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import th.co.prior.read_data_from_web.a.Entity.MsEntity;
 import th.co.prior.read_data_from_web.a.Entity.TransactionEntity;
+import th.co.prior.read_data_from_web.a.Model.ExamTime;
 import th.co.prior.read_data_from_web.a.Model.JsonFromWebModel;
 import th.co.prior.read_data_from_web.a.Model.ResponseModel;
 import th.co.prior.read_data_from_web.a.Model.TrModel;
@@ -181,5 +182,69 @@ public class ReadDataService {
                 this.transactionRepositoryJPA.saveAll(listTransaction);
 
                 return result;
+        }
+
+        public ResponseModel<?> newGame(ExamTime examTime) {
+                ResponseModel<Integer> result = new ResponseModel<>();
+                Integer fullRounds = 0;
+                int startHour = Integer.parseInt(examTime.getStartTime().substring(0, 2));
+                int startMinute = Integer.parseInt(examTime.getStartTime().substring(3));
+                int finishHour = Integer.parseInt(examTime.getFinishTime().substring(0, 2));
+                int finishMinute = Integer.parseInt(examTime.getFinishTime().substring(3));
+
+                System.out.println(startHour);
+                System.out.println(startMinute);
+                System.out.println(finishHour);
+                System.out.println(finishMinute);
+
+
+                if ((startHour - 1) < finishHour){
+
+                        Integer hourSum = (finishHour - startHour);
+                        System.out.println(hourSum);
+                Integer totalMinutes = hourSum * 60 + (startMinute-finishMinute);
+                        System.out.println("total "+ totalMinutes);
+
+
+                        if (totalMinutes < 0) {
+                        // If finish time is earlier than start time, add a day's worth of minutes (1440)
+                        totalMinutes += 1440;
+                        System.out.println("total 1440 "+ totalMinutes);
+
+                        }
+
+                // Calculate the number of full rounds played during the game session
+                fullRounds = totalMinutes / 15;
+
+                System.out.println("fullRounds "+ fullRounds);
+
+
+                System.out.println("startMinute "+startMinute);
+
+                // Calculate the number of rounds that started at minute 00, 15, 30, and 45
+                Integer rounds00 = startMinute < 15 ? 0 : 1;
+                Integer rounds15 = startMinute < 30 ? 0 : 1;
+                Integer rounds30 = startMinute < 45 ? 0 : 1;
+                Integer rounds45 = startMinute < 60 ? 0 : 1;
+
+                Integer qualifier = (rounds00 + rounds15 + rounds30 + rounds45);
+                System.out.println("qualifier "+ qualifier);
+
+//                 Subtract the rounds that started before the start time
+                fullRounds = fullRounds - qualifier ;
+                System.out.println("fullRounds2 "+ fullRounds);
+
+                result.setData(fullRounds);
+
+                String str = "susses";
+                result.setDescription(str);
+                return result;}
+                else {
+                        String str = "you have played overnight ";
+                        result.setDescription(str);
+                        result.setData(fullRounds);
+                    return result;
+                }
+
         }
 }
